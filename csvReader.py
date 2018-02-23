@@ -1,13 +1,13 @@
 import csv
 
-players = []
-projections = []
+class stats:
 
-with open('players.csv') as csvDataFile:
-    csvReader = csv.reader(csvDataFile)
-    for row in csvReader:
-        players.append(row[0])
-        projections.append(row[1])
+    def __init__(self, fname):
+        self.players = []
+        self.projections = []
 
-print(players)
-print(projections)
+        with open(fname) as csvDataFile:
+            csvReader = csv.reader(csvDataFile)
+            for row in csvReader:
+                self.players.append(row[0])
+                self.projections.append(row[1])
