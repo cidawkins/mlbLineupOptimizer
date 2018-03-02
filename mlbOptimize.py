@@ -129,11 +129,6 @@ def lineupBuilder(players, salaryCap):
             currLineup.append(players[6][i][0])
 
 
-
-    if (len(sys.argv) < 2):
-        print('Usage:', sys.executable, sys.argv[0], 'players.csv')
-        sys.exit(1)
-
     return currLineup
 
 players = [[], [], [], [], [], [], []]
@@ -151,14 +146,14 @@ with open('players.csv', 'r') as csvfile:
 
 def lineups(numLineups):
 
-    lineups = []
+    lineupList = []
 
     for i in range(0, numLineups):
-        lineups.append(lineupBuilder(players, salaryCap))
+        lineupList.append(lineupBuilder(players, salaryCap))
 
-    print(lineups[1])
+    return lineupList
 
-lineups(2)
+print(lineups(10))
 
 
 
