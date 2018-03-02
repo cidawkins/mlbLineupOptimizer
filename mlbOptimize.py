@@ -17,8 +17,10 @@ def getPosNum(name):
         'OF': 6
     }[name]
 
-def main(players, salaryCap):
+def lineupBuilder(players, salaryCap):
     solver = pywraplp.Solver('CoinsGridCLP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
+
+    currLineup = []
 
     rangeP = range(len(players[0]))
     rangeC = range(len(players[1]))
@@ -94,43 +96,45 @@ def main(players, salaryCap):
     for i in rangeP:
         if (takeP[i].SolutionValue()):
             salary += players[0][i][2]
-            print(players[0][i][0], '(P): ${:,d}'.format(players[0][i][2]), '(' + str(players[0][i][1]) + ')')
+            currLineup.append(players[0][i][0])
 
     for i in rangeC:
         if (takeC[i].SolutionValue()):
             salary += players[1][i][2]
-            print(players[1][i][0], '(C): ${:,d}'.format(players[1][i][2]), '(' + str(players[1][i][1]) + ')')
+            currLineup.append(players[1][i][0])
 
     for i in range1B:
         if (take1B[i].SolutionValue()):
             salary += players[2][i][2]
-            print(players[2][i][0], '(1B): ${:,d}'.format(players[2][i][2]), '(' + str(players[2][i][1]) + ')')
+            currLineup.append(players[2][i][0])
 
     for i in range2B:
         if (take2B[i].SolutionValue()):
             salary += players[3][i][2]
-            print(players[3][i][0], '(2B): ${:,d}'.format(players[3][i][2]), '(' + str(players[3][i][1]) + ')')
+            currLineup.append(players[3][i][0])
 
     for i in range3B:
         if (take3B[i].SolutionValue()):
             salary += players[4][i][2]
-            print(players[4][i][0], '(3B): ${:,d}'.format(players[4][i][2]), '(' + str(players[4][i][1]) + ')')
+            currLineup.append(players[4][i][0])
 
     for i in rangeSS:
         if (takeSS[i].SolutionValue()):
             salary += players[5][i][2]
-            print(players[5][i][0], '(SS): ${:,d}'.format(players[5][i][2]), '(' + str(players[5][i][1]) + ')')
+            currLineup.append(players[5][i][0])
 
     for i in rangeOF:
         if (takeOF[i].SolutionValue()):
             salary += players[6][i][2]
-            print(players[6][i][0], '(OF): ${:,d}'.format(players[6][i][2]), '(' + str(players[6][i][1]) + ')')
+            currLineup.append(players[6][i][0])
 
-    print("\n", 'Total: ${:,d}'.format(salary), '(' + str(solver.Objective().Value()) + ')')
+
 
     if (len(sys.argv) < 2):
         print('Usage:', sys.executable, sys.argv[0], 'players.csv')
         sys.exit(1)
+
+    return currLineup
 
 players = [[], [], [], [], [], [], []]
 
@@ -142,7 +146,19 @@ with open('players.csv', 'r') as csvfile:
             [row['Name'], float(row['Value']), int(row['Salary']), int(row['Team'])]
         )
 
-main(players, salaryCap)
+
+# Make multiple lineups
+
+def lineups(numLineups):
+
+    lineups = []
+
+    for i in range(0, numLineups):
+        lineups.append(lineupBuilder(players, salaryCap))
+
+    print(lineups[1])
+
+lineups(2)
 
 
 
