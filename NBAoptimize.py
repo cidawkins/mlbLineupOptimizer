@@ -1,13 +1,21 @@
-from ortools.linear_solver import pywraplp
+# NBA Optimizer
+#
+# by Dave Hensley
+#
+# Picks an ideal fantasy NBA team using a modified knapsack algorithm
+#
+# Usage: python nba-optimizer.py players.csv
+
 import csv, sys
+from ortools.linear_solver import pywraplp
 
-salaryCap = 50000
+salaryCap = 60000
 
-def getPosNum(name):
+def getPositionNumber(name):
     return {
         'Center': 0,
         'Point Guard': 1,
-        'Power Forward': 2,
+        'Power Forward' : 2,
         'Shooting Guard': 3,
         'Small Forward': 4
     }[name]
@@ -22,10 +30,10 @@ def main(players, salaryCap):
     rangeSF = range(len(players[4]))
 
     takeC = [solver.IntVar(0, 1, 'takeC[%i]' % j) for j in rangeC]
-    takePG = [solver.IntVar(0, 1, 'takeC[%i]' % j) for j in rangePG]
-    takePF = [solver.IntVar(0, 1, 'takeC[%i]' % j) for j in rangePF]
-    takeSG = [solver.IntVar(0, 1, 'takeC[%i]' % j) for j in rangeSG]
-    takeSF = [solver.IntVar(0, 1, 'takeC[%i]' % j) for j in rangeSF]
+    takePG = [solver.IntVar(0, 1, 'takePG[%i]' % j) for j in rangePG]
+    takePF = [solver.IntVar(0, 1, 'takePF[%i]' % j) for j in rangePF]
+    takeSG = [solver.IntVar(0, 1, 'takeSG[%i]' % j) for j in rangeSG]
+    takeSF = [solver.IntVar(0, 1, 'takeSF[%i]' % j) for j in rangeSF]
 
     teamsC = []
     teamsPG = []
@@ -40,17 +48,17 @@ def main(players, salaryCap):
         teamsSG.insert(teamNumber, solver.Sum([(players[3][i][3] == teamNumber + 1) * takeSG[i] for i in rangeSG]))
         teamsSF.insert(teamNumber, solver.Sum([(players[4][i][3] == teamNumber + 1) * takeSF[i] for i in rangeSF]))
 
-    valueC = solver.Sum([(players[0][i][1] == teamNumber + 1) * takeC[i] for i in rangeC])
-    valuePG = solver.Sum([(players[1][i][1] == teamNumber + 1) * takePG[i] for i in rangePG])
-    valuePF = solver.Sum([(players[2][i][1] == teamNumber + 1) * takePF[i] for i in rangePF])
-    valueSG = solver.Sum([(players[3][i][1] == teamNumber + 1) * takeSG[i] for i in rangeSG])
-    valueSF = solver.Sum([(players[4][i][1] == teamNumber + 1) * takeSF[i] for i in rangeSF])
+    valueC = solver.Sum([players[0][i][1] * takeC[i] for i in rangeC])
+    valuePG = solver.Sum([players[1][i][1] * takePG[i] for i in rangePG])
+    valuePF = solver.Sum([players[2][i][1] * takePF[i] for i in rangePF])
+    valueSG = solver.Sum([players[3][i][1] * takeSG[i] for i in rangeSG])
+    valueSF = solver.Sum([players[4][i][1] * takeSF[i] for i in rangeSF])
 
-    salaryC = solver.Sum([(players[0][i][2] == teamNumber + 1) * takeC[i] for i in rangeC])
-    salaryPG = solver.Sum([(players[1][i][2] == teamNumber + 1) * takePG[i] for i in rangePG])
-    salaryPF = solver.Sum([(players[2][i][2] == teamNumber + 1) * takePF[i] for i in rangePF])
-    salarySG = solver.Sum([(players[3][i][2] == teamNumber + 1) * takeSG[i] for i in rangeSG])
-    salarySF = solver.Sum([(players[4][i][2] == teamNumber + 1) * takeSF[i] for i in rangeSF])
+    salaryC = solver.Sum([players[0][i][2] * takeC[i] for i in rangeC])
+    salaryPG = solver.Sum([players[1][i][2] * takePG[i] for i in rangePG])
+    salaryPF = solver.Sum([players[2][i][2] * takePF[i] for i in rangePF])
+    salarySG = solver.Sum([players[3][i][2] * takeSG[i] for i in rangeSG])
+    salarySF = solver.Sum([players[4][i][2] * takeSF[i] for i in rangeSF])
 
     solver.Add(salaryC + salaryPG + salaryPF + salarySG + salarySF <= salaryCap)
 
@@ -97,17 +105,18 @@ def main(players, salaryCap):
 
     print("\n", 'Total: ${:,d}'.format(salary), '(' + str(solver.Objective().Value()) + ')')
 
-if (len(sys.argv) < 2):
-    print('Usage:', sys.executable, sys.argv[0], 'players.csv')
-    sys.exit(1)
+    if (len(sys.argv) < 2):
+        print('Usage:', sys.executable, sys.argv[0], 'players.csv')
+        sys.exit(1)
+
 
 players = [[], [], [], [], []]
 
-with open(sys.argv[1], 'rb') as csvfile:
-    reader = csv.DictReader(csvfile)
+with open('players.csv', 'r') as csvfile:
+    spamreader = csv.DictReader(csvfile)
 
-    for row in reader:
-        players[getPosNum(row['Subposition'])].append(
+    for row in spamreader:
+        players[getPositionNumber(row['Subposition'])].append(
             [row['Name'], float(row['Value']), int(row['Salary']), int(row['Team'])]
         )
 

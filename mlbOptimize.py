@@ -17,6 +17,40 @@ def getPosNum(name):
         'OF': 6
     }[name]
 
+def getTeamNum(team):
+    return {
+        'BOS': 0,
+        'NYY': 1,
+        'TB': 2,
+        'TOR': 3,
+        'BAL': 4,
+        'CHW': 5,
+        'MIN': 6,
+        'KC': 7,
+        'DET': 8,
+        'CLE': 9,
+        'OAK': 10,
+        'LAA': 11,
+        'HOU': 12,
+        'TEX': 13,
+        'SEA': 14,
+        'ATL': 15,
+        'PHI': 16,
+        'NYM': 17,
+        'WAS': 18,
+        'MIA': 19,
+        'CHC': 20,
+        'PIT': 21,
+        'CIN': 22,
+        'MIL': 23,
+        'STL': 24,
+        'LAD': 25,
+        'SF': 26,
+        'SD': 27,
+        'COL': 28,
+        'ARI': 29
+    }[team]
+
 def lineupBuilder(players, salaryCap):
     solver = pywraplp.Solver('CoinsGridCLP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
 
