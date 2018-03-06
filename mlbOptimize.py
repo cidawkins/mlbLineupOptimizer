@@ -120,6 +120,16 @@ def lineupBuilder(players, salaryCap):
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
 
+    # Stack at least three hitters from the same team
+    for i in range(0, 29):
+        solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] >= 3)
+
+    # Add constraint to adjust for lineup overlap
+
+    # Add constraint to ass pitcher to stack
+
+
+
     solver.Maximize(valueP + valueC + value1B + value2B + value3B + valueSS + valueOF)
     solver.Solve()
     assert solver.VerifySolution(1e-7, True)
