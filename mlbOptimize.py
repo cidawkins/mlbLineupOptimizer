@@ -51,7 +51,7 @@ def getTeamNum(team):
         'ARI': 29
     }[team]
 
-def lineupBuilder(players, salaryCap):
+def lineupBuilder(players, salaryCap, lineups):
     solver = pywraplp.Solver('CoinsGridCLP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
 
     currLineup = []
@@ -89,6 +89,26 @@ def lineupBuilder(players, salaryCap):
         teamsSS.insert(teamNumber, solver.Sum([(players[5][i][3] == teamNumber + 1) * takeSS[i] for i in rangeSS]))
         teamsOF.insert(teamNumber, solver.Sum([(players[6][i][3] == teamNumber + 1) * takeOF[i] for i in rangeOF]))
 
+    """ lCrossP = []
+    lCrossC = []
+    lCross1B = []
+    lCross2B = []
+    lCross3B = []
+    lCrossSS = []
+    lCrossOF = []
+
+    for j in range(0, len(lineups)):
+        lCrossP.insert(j, solver.Sum([(players[0][i][1] == lineups[j][0]) * takeP[i] for i in rangeP]))
+        lCrossC.insert(j, solver.Sum([(players[0][i][1] == lineups[j][1]) * takeP[i] for i in rangeP]))
+        lCross1B.insert(j, solver.Sum([(players[1][i][1] == lineups[j][2]) * takeC[i] for i in rangeC]))
+        lCross2B.insert(j, solver.Sum([(players[2][i][1] == lineups[j][3]) * take1B[i] for i in range1B]))
+        lCross3B.insert(j, solver.Sum([(players[3][i][1] == lineups[j][4]) * take2B[i] for i in range2B]))
+        lCrossSS.insert(j, solver.Sum([(players[4][i][1] == lineups[j][5]) * take3B[i] for i in range3B]))
+        lCrossOF.insert(j, solver.Sum([(players[5][i][1] == lineups[j][6]) * takeSS[i] for i in rangeSS]))
+        lCrossOF.insert(j, solver.Sum([(players[6][i][1] == lineups[j][7]) * takeOF[i] for i in rangeOF]))
+        lCrossOF.insert(j, solver.Sum([(players[6][i][1] == lineups[j][8]) * takeOF[i] for i in rangeOF]))
+        lCrossOF.insert(j, solver.Sum([(players[6][i][1] == lineups[j][9]) * takeOF[i] for i in rangeOF]))
+    """
     valueP = solver.Sum([players[0][i][1] * takeP[i] for i in rangeP])
     valueC = solver.Sum([players[1][i][1] * takeC[i] for i in rangeC])
     value1B = solver.Sum([players[2][i][1] * take1B[i] for i in range1B])
@@ -120,13 +140,16 @@ def lineupBuilder(players, salaryCap):
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
 
-    # Stack at least three hitters from the same team
+    # Stack at least three hitters from the same team (This is saying that there has to be at least "0" or more players
+    # per team.  This is not what needs to be done for stacking, and needs to be fixed!
     for i in range(0, 29):
-        solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] >= 3)
+        solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] >= 0)
 
     # Add constraint to adjust for lineup overlap
+    # for i in range(0, len(lineups)):
+        # solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] >= 0)
 
-    # Add constraint to ass pitcher to stack
+    # Add constraint to add pitcher to stack
 
 
 
@@ -191,13 +214,14 @@ with open('players.csv', 'r') as csvfile:
 def lineups(numLineups):
 
     lineupList = []
+    lineupList.append(['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'])
 
     for i in range(0, numLineups):
-        lineupList.append(lineupBuilder(players, salaryCap))
+        lineupList.append(lineupBuilder(players, salaryCap, lineupList))
 
     return lineupList
 
-print(lineups(10))
+print(lineups(1))
 
 
 
