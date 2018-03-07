@@ -137,9 +137,37 @@ def lineupBuilder(players, salaryCap, lineups):
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
 
-    # Stack at least three hitters from the same team (This is saying that there has to be at least "0" or more players
-    # per team.  This is not what needs to be done for stacking, and needs to be fixed!
-
+    # Stack at least three hitters from the same team.  THis seems like a very sloppy way of doing it, but it does work
+    solver.Add((teamsC[0] + teams1B[0] + teams2B[0] + teams3B[0] + teamsSS[0] + teamsOF[0] >= 3) or
+               (teamsC[1] + teams1B[1] + teams2B[1] + teams3B[1] + teamsSS[1] + teamsOF[1] >= 3) or
+               (teamsC[2] + teams1B[2] + teams2B[2] + teams3B[2] + teamsSS[2] + teamsOF[2] >= 3) or
+               (teamsC[3] + teams1B[3] + teams2B[3] + teams3B[3] + teamsSS[3] + teamsOF[3] >= 3) or
+               (teamsC[4] + teams1B[4] + teams2B[4] + teams3B[4] + teamsSS[4] + teamsOF[4] >= 3) or
+               (teamsC[5] + teams1B[5] + teams2B[5] + teams3B[5] + teamsSS[5] + teamsOF[5] >= 3) or
+               (teamsC[6] + teams1B[6] + teams2B[6] + teams3B[6] + teamsSS[6] + teamsOF[6] >= 3) or
+               (teamsC[7] + teams1B[7] + teams2B[7] + teams3B[7] + teamsSS[7] + teamsOF[7] >= 3) or
+               (teamsC[8] + teams1B[8] + teams2B[8] + teams3B[8] + teamsSS[8] + teamsOF[8] >= 3) or
+               (teamsC[9] + teams1B[9] + teams2B[9] + teams3B[9] + teamsSS[9] + teamsOF[9] >= 3) or
+               (teamsC[10] + teams1B[10] + teams2B[10] + teams3B[10] + teamsSS[10] + teamsOF[10] >= 3) or
+               (teamsC[11] + teams1B[11] + teams2B[11] + teams3B[11] + teamsSS[11] + teamsOF[11] >= 3) or
+               (teamsC[12] + teams1B[12] + teams2B[12] + teams3B[12] + teamsSS[12] + teamsOF[12] >= 3) or
+               (teamsC[13] + teams1B[13] + teams2B[13] + teams3B[13] + teamsSS[13] + teamsOF[13] >= 3) or
+               (teamsC[14] + teams1B[14] + teams2B[14] + teams3B[14] + teamsSS[14] + teamsOF[14] >= 3) or
+               (teamsC[15] + teams1B[15] + teams2B[15] + teams3B[15] + teamsSS[15] + teamsOF[15] >= 3) or
+               (teamsC[16] + teams1B[16] + teams2B[16] + teams3B[16] + teamsSS[16] + teamsOF[16] >= 3) or
+               (teamsC[17] + teams1B[17] + teams2B[17] + teams3B[17] + teamsSS[17] + teamsOF[17] >= 3) or
+               (teamsC[18] + teams1B[18] + teams2B[18] + teams3B[18] + teamsSS[18] + teamsOF[18] >= 3) or
+               (teamsC[19] + teams1B[19] + teams2B[19] + teams3B[19] + teamsSS[19] + teamsOF[19] >= 3) or
+               (teamsC[20] + teams1B[20] + teams2B[20] + teams3B[20] + teamsSS[20] + teamsOF[20] >= 3) or
+               (teamsC[21] + teams1B[21] + teams2B[21] + teams3B[21] + teamsSS[21] + teamsOF[21] >= 3) or
+               (teamsC[22] + teams1B[22] + teams2B[22] + teams3B[22] + teamsSS[22] + teamsOF[22] >= 3) or
+               (teamsC[23] + teams1B[23] + teams2B[23] + teams3B[23] + teamsSS[23] + teamsOF[23] >= 3) or
+               (teamsC[24] + teams1B[24] + teams2B[24] + teams3B[24] + teamsSS[24] + teamsOF[24] >= 3) or
+               (teamsC[25] + teams1B[25] + teams2B[25] + teams3B[25] + teamsSS[25] + teamsOF[25] >= 3) or
+               (teamsC[26] + teams1B[26] + teams2B[26] + teams3B[26] + teamsSS[26] + teamsOF[26] >= 3) or
+               (teamsC[27] + teams1B[27] + teams2B[27] + teams3B[27] + teamsSS[27] + teamsOF[27] >= 3) or
+               (teamsC[28] + teams1B[28] + teams2B[28] + teams3B[28] + teamsSS[28] + teamsOF[28] >= 3) or
+               (teamsC[29] + teams1B[29] + teams2B[29] + teams3B[29] + teamsSS[29] + teamsOF[29] >= 3))
 
     # Add constraint to adjust for lineup overlap
     for i in range(0, len(lineups)):
@@ -217,7 +245,7 @@ def lineups(numLineups):
 
     return lineupList
 
-print(lineups(2))
+print(lineups(5))
 
 
 
