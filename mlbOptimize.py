@@ -183,44 +183,52 @@ def lineupBuilder(players, salaryCap, lineups):
     print('Solved in', solver.wall_time(), 'milliseconds!', "\n")
 
     salary = 0
+    projection = 0
 
     for i in rangeP:
         if (takeP[i].SolutionValue()):
             salary += players[0][i][2]
+            projection += players[0][i][1]
             currLineup.append(players[0][i][0])
 
     for i in rangeC:
         if (takeC[i].SolutionValue()):
             salary += players[1][i][2]
+            projection += players[1][i][1]
             currLineup.append(players[1][i][0])
 
     for i in range1B:
         if (take1B[i].SolutionValue()):
             salary += players[2][i][2]
+            projection += players[2][i][1]
             currLineup.append(players[2][i][0])
 
     for i in range2B:
         if (take2B[i].SolutionValue()):
             salary += players[3][i][2]
+            projection += players[3][i][1]
             currLineup.append(players[3][i][0])
 
     for i in range3B:
         if (take3B[i].SolutionValue()):
             salary += players[4][i][2]
+            projection += players[4][i][1]
             currLineup.append(players[4][i][0])
 
     for i in rangeSS:
         if (takeSS[i].SolutionValue()):
             salary += players[5][i][2]
+            projection += players[5][i][1]
             currLineup.append(players[5][i][0])
 
     for i in rangeOF:
         if (takeOF[i].SolutionValue()):
             salary += players[6][i][2]
+            projection += players[6][i][1]
             currLineup.append(players[6][i][0])
 
 
-    return currLineup
+    return [currLineup, salary, projection]
 
 players = [[], [], [], [], [], [], []]
 
@@ -238,14 +246,17 @@ with open('players.csv', 'r') as csvfile:
 def lineups(numLineups):
 
     lineupList = []
+    resultList = []
     lineupList.append(['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'])
 
     for i in range(0, numLineups):
-        lineupList.append(lineupBuilder(players, salaryCap, lineupList))
+        results = lineupBuilder(players, salaryCap, lineupList)
+        lineupList.append(results[0])
+        resultList.append(results)
 
-    return lineupList
+    return resultList
 
-print(lineups(5))
+print(lineups(10))
 
 
 
