@@ -89,7 +89,7 @@ def lineupBuilder(players, salaryCap, lineups):
         teamsSS.insert(teamNumber, solver.Sum([(players[5][i][3] == teamNumber + 1) * takeSS[i] for i in rangeSS]))
         teamsOF.insert(teamNumber, solver.Sum([(players[6][i][3] == teamNumber + 1) * takeOF[i] for i in rangeOF]))
 
-    """ lCrossP = []
+    lCrossP = []
     lCrossC = []
     lCross1B = []
     lCross2B = []
@@ -98,17 +98,14 @@ def lineupBuilder(players, salaryCap, lineups):
     lCrossOF = []
 
     for j in range(0, len(lineups)):
-        lCrossP.insert(j, solver.Sum([(players[0][i][1] == lineups[j][0]) * takeP[i] for i in rangeP]))
-        lCrossC.insert(j, solver.Sum([(players[0][i][1] == lineups[j][1]) * takeP[i] for i in rangeP]))
-        lCross1B.insert(j, solver.Sum([(players[1][i][1] == lineups[j][2]) * takeC[i] for i in rangeC]))
-        lCross2B.insert(j, solver.Sum([(players[2][i][1] == lineups[j][3]) * take1B[i] for i in range1B]))
-        lCross3B.insert(j, solver.Sum([(players[3][i][1] == lineups[j][4]) * take2B[i] for i in range2B]))
-        lCrossSS.insert(j, solver.Sum([(players[4][i][1] == lineups[j][5]) * take3B[i] for i in range3B]))
-        lCrossOF.insert(j, solver.Sum([(players[5][i][1] == lineups[j][6]) * takeSS[i] for i in rangeSS]))
-        lCrossOF.insert(j, solver.Sum([(players[6][i][1] == lineups[j][7]) * takeOF[i] for i in rangeOF]))
-        lCrossOF.insert(j, solver.Sum([(players[6][i][1] == lineups[j][8]) * takeOF[i] for i in rangeOF]))
-        lCrossOF.insert(j, solver.Sum([(players[6][i][1] == lineups[j][9]) * takeOF[i] for i in rangeOF]))
-    """
+        lCrossP.insert(j, solver.Sum([((players[0][i][0] == lineups[j][0]) or (players[0][i][0] == lineups[j][1])) * takeP[i] for i in rangeP]))
+        lCrossC.insert(j, solver.Sum([(players[1][i][0] == lineups[j][2]) * takeC[i] for i in rangeC]))
+        lCross1B.insert(j, solver.Sum([(players[2][i][0] == lineups[j][3]) * take1B[i] for i in range1B]))
+        lCross2B.insert(j, solver.Sum([(players[3][i][0] == lineups[j][4]) * take2B[i] for i in range2B]))
+        lCross3B.insert(j, solver.Sum([(players[4][i][0] == lineups[j][5]) * take3B[i] for i in range3B]))
+        lCrossSS.insert(j, solver.Sum([(players[5][i][0] == lineups[j][6]) * takeSS[i] for i in rangeSS]))
+        lCrossOF.insert(j, solver.Sum([((players[6][i][0] == lineups[j][7]) or (players[6][i][0] == lineups[j][8]) or (players[6][i][0] == lineups[j][9])) * takeOF[i] for i in rangeOF]))
+
     valueP = solver.Sum([players[0][i][1] * takeP[i] for i in rangeP])
     valueC = solver.Sum([players[1][i][1] * takeC[i] for i in rangeC])
     value1B = solver.Sum([players[2][i][1] * take1B[i] for i in range1B])
@@ -117,13 +114,13 @@ def lineupBuilder(players, salaryCap, lineups):
     valueSS = solver.Sum([players[5][i][1] * takeSS[i] for i in rangeSS])
     valueOF = solver.Sum([players[6][i][1] * takeOF[i] for i in rangeOF])
 
-    salaryP = solver.Sum([players[0][i][1] * takeP[i] for i in rangeP])
-    salaryC = solver.Sum([players[1][i][1] * takeC[i] for i in rangeC])
-    salary1B = solver.Sum([players[2][i][1] * take1B[i] for i in range1B])
-    salary2B = solver.Sum([players[3][i][1] * take2B[i] for i in range2B])
-    salary3B = solver.Sum([players[4][i][1] * take3B[i] for i in range3B])
-    salarySS = solver.Sum([players[5][i][1] * takeSS[i] for i in rangeSS])
-    salaryOF = solver.Sum([players[6][i][1] * takeOF[i] for i in rangeOF])
+    salaryP = solver.Sum([players[0][i][2] * takeP[i] for i in rangeP])
+    salaryC = solver.Sum([players[1][i][2] * takeC[i] for i in rangeC])
+    salary1B = solver.Sum([players[2][i][2] * take1B[i] for i in range1B])
+    salary2B = solver.Sum([players[3][i][2] * take2B[i] for i in range2B])
+    salary3B = solver.Sum([players[4][i][2] * take3B[i] for i in range3B])
+    salarySS = solver.Sum([players[5][i][2] * takeSS[i] for i in rangeSS])
+    salaryOF = solver.Sum([players[6][i][2] * takeOF[i] for i in rangeOF])
 
     solver.Add(salaryP + salaryC + salary1B + salary2B + salary3B + salarySS + salaryOF <= salaryCap)
 
@@ -142,12 +139,11 @@ def lineupBuilder(players, salaryCap, lineups):
 
     # Stack at least three hitters from the same team (This is saying that there has to be at least "0" or more players
     # per team.  This is not what needs to be done for stacking, and needs to be fixed!
-    for i in range(0, 29):
-        solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] >= 0)
+
 
     # Add constraint to adjust for lineup overlap
-    # for i in range(0, len(lineups)):
-        # solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] >= 0)
+    for i in range(0, len(lineups)):
+        solver.Add(lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 3)
 
     # Add constraint to add pitcher to stack
 
@@ -221,7 +217,7 @@ def lineups(numLineups):
 
     return lineupList
 
-print(lineups(1))
+print(lineups(2))
 
 
 
