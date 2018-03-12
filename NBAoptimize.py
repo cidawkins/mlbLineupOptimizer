@@ -15,7 +15,7 @@ def getPositionNumber(name):
     return {
         'Center': 0,
         'Point Guard': 1,
-        'Power Forward' : 2,
+        'Power Forward': 2,
         'Shooting Guard': 3,
         'Small Forward': 4
     }[name]
@@ -55,12 +55,12 @@ def lineupBuilder(players, salaryCap, lineups):
     lCrossPF = []
 
     for j in range(0, len(lineups)):
-        lCrossPG.insert(j, solver.Sum(
-            [((players[0][i][0] == lineups[j][0]) or (players[0][i][0] == lineups[j][1])) * takePG[i] for i in rangePG]))
-        lCrossC.insert(j, solver.Sum([(players[1][i][0] == lineups[j][2]) * takeC[i] for i in rangeC]))
-        lCrossSG.insert(j, solver.Sum([(players[2][i][0] == lineups[j][3]) * takeSG[i] for i in rangeSG]))
-        lCrossSF.insert(j, solver.Sum([(players[3][i][0] == lineups[j][4]) * takeSF[i] for i in rangeSF]))
-        lCrossPF.insert(j, solver.Sum([(players[4][i][0] == lineups[j][5]) * takePF[i] for i in rangePF]))
+        lCrossC.insert(j, solver.Sum(
+            [((players[0][i][0] == lineups[j][0]) or (players[0][i][0] == lineups[j][1])) * takeC[i] for i in rangeC]))
+        lCrossPG.insert(j, solver.Sum([(players[1][i][0] == lineups[j][2]) * takePG[i] for i in rangePG]))
+        lCrossPF.insert(j, solver.Sum([(players[2][i][0] == lineups[j][3]) * takePF[i] for i in rangePF]))
+        lCrossSG.insert(j, solver.Sum([(players[3][i][0] == lineups[j][4]) * takeSG[i] for i in rangeSG]))
+        lCrossSF.insert(j, solver.Sum([(players[4][i][0] == lineups[j][5]) * takeSF[i] for i in rangeSF]))
 
     valueC = solver.Sum([players[0][i][1] * takeC[i] for i in rangeC])
     valuePG = solver.Sum([players[1][i][1] * takePG[i] for i in rangePG])
@@ -77,11 +77,13 @@ def lineupBuilder(players, salaryCap, lineups):
     solver.Add(salaryC + salaryPG + salaryPF + salarySG + salarySF <= salaryCap)
 
     # Sets number of player to pick per position.  Can this be adjusted for a utility slot?
-    solver.Add(solver.Sum(((takePG[i] for i in rangePG) == 1) or ((takePG[i] for i in rangePG) == 2) or ((takePG[i] for i in rangePG) == 3)))
-    solver.Add(solver.Sum(((takeSG[i] for i in rangeSG) == 1) or ((takeSG[i] for i in rangeSG) == 2) or ((takeSG[i] for i in rangeSG) == 3)))
-    solver.Add(solver.Sum(((takeSF[i] for i in rangeSF) == 1) or ((takeSF[i] for i in rangeSF) == 2) or ((takeSF[i] for i in rangeSF) == 3)))
-    solver.Add(solver.Sum(((takePF[i] for i in rangePF) == 1) or ((takePF[i] for i in rangePF) == 2) or ((takePF[i] for i in rangePF) == 3)))
-    solver.Add(solver.Sum(((takePG[i] for i in rangePG) == 1) or ((takePG[i] for i in rangePG) == 2)))
+    solver.Add((solver.Sum(takePG[i] for i in rangePG) == 1) or (solver.Sum(takePG[i] for i in rangePG) == 2) or (solver.Sum(takePG[i] for i in rangePG) == 3))
+    solver.Add((solver.Sum(takeSG[i] for i in rangeSG) == 1) or (solver.Sum(takeSG[i] for i in rangeSG) == 2) or (solver.Sum(takeSG[i] for i in rangeSG) == 3))
+    solver.Add((solver.Sum(takeSF[i] for i in rangeSF) == 1) or (solver.Sum(takeSF[i] for i in rangeSF) == 2) or (solver.Sum(takeSF[i] for i in rangeSF) == 3))
+    solver.Add((solver.Sum(takePF[i] for i in rangePF) == 1) or (solver.Sum(takePF[i] for i in rangePF) == 2) or (solver.Sum(takePF[i] for i in rangePF) == 3))
+    solver.Add((solver.Sum(takeC[i] for i in rangeC) == 1) or (solver.Sum(takeC[i] for i in rangeC) == 2))
+
+    solver.Add(((solver.Sum(takePG[i] for i in rangePG)) + (solver.Sum(takeSG[i] for i in rangeSG)) + (solver.Sum(takeSF[i] for i in rangeSF)) + (solver.Sum(takePF[i] for i in rangePF)) + (solver.Sum(takeC[i] for i in rangeC))) == 8)
 
     # Max 5 hitters per teamRRr
     for i in range(0, 29):
