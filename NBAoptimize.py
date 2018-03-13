@@ -11,6 +11,7 @@ from ortools.linear_solver import pywraplp
 
 salaryCap = 60000
 
+
 def getPositionNumber(name):
     return {
         'Center': 0,
@@ -19,6 +20,7 @@ def getPositionNumber(name):
         'Shooting Guard': 3,
         'Small Forward': 4
     }[name]
+
 
 def lineupBuilder(players, salaryCap, lineups):
     solver = pywraplp.Solver('CoinsGridCLP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
@@ -56,11 +58,30 @@ def lineupBuilder(players, salaryCap, lineups):
 
     for j in range(0, len(lineups)):
         lCrossC.insert(j, solver.Sum(
-            [((players[0][i][0] == lineups[j][0]) or (players[0][i][0] == lineups[j][1])) * takeC[i] for i in rangeC]))
-        lCrossPG.insert(j, solver.Sum([(players[1][i][0] == lineups[j][2]) * takePG[i] for i in rangePG]))
-        lCrossPF.insert(j, solver.Sum([(players[2][i][0] == lineups[j][3]) * takePF[i] for i in rangePF]))
-        lCrossSG.insert(j, solver.Sum([(players[3][i][0] == lineups[j][4]) * takeSG[i] for i in rangeSG]))
-        lCrossSF.insert(j, solver.Sum([(players[4][i][0] == lineups[j][5]) * takeSF[i] for i in rangeSF]))
+            [((players[0][i][0] == lineups[j][0]) or (players[0][i][0] == lineups[j][1]) or
+              (players[0][i][0] == lineups[j][2]) or (players[0][i][0] == lineups[j][3]) or
+              (players[0][i][0] == lineups[j][4]) or (players[0][i][0] == lineups[j][5]) or
+              (players[0][i][0] == lineups[j][6]) or (players[0][i][0] == lineups[j][7])) * takeC[i] for i in rangeC]))
+        lCrossPG.insert(j, solver.Sum(
+            [((players[1][i][0] == lineups[j][0]) or (players[1][i][0] == lineups[j][1]) or
+              (players[1][i][0] == lineups[j][2]) or (players[1][i][0] == lineups[j][3]) or
+              (players[1][i][0] == lineups[j][4]) or (players[1][i][0] == lineups[j][5]) or
+              (players[1][i][0] == lineups[j][6]) or (players[1][i][0] == lineups[j][7])) * takePG[i] for i in rangePG]))
+        lCrossPF.insert(j, solver.Sum(
+            [((players[2][i][0] == lineups[j][0]) or (players[2][i][0] == lineups[j][1]) or
+              (players[2][i][0] == lineups[j][2]) or (players[2][i][0] == lineups[j][3]) or
+              (players[2][i][0] == lineups[j][4]) or (players[2][i][0] == lineups[j][5]) or
+              (players[2][i][0] == lineups[j][6]) or (players[2][i][0] == lineups[j][7])) * takePF[i] for i in rangePF]))
+        lCrossSF.insert(j, solver.Sum(
+            [((players[4][i][0] == lineups[j][0]) or (players[4][i][0] == lineups[j][1]) or
+              (players[4][i][0] == lineups[j][2]) or (players[4][i][0] == lineups[j][3]) or
+              (players[4][i][0] == lineups[j][4]) or (players[4][i][0] == lineups[j][5]) or
+              (players[4][i][0] == lineups[j][6]) or (players[4][i][0] == lineups[j][7])) * takeSF[i] for i in rangeSF]))
+        lCrossSG.insert(j, solver.Sum(
+            [((players[3][i][0] == lineups[j][0]) or (players[3][i][0] == lineups[j][1]) or
+              (players[3][i][0] == lineups[j][2]) or (players[3][i][0] == lineups[j][3]) or
+              (players[3][i][0] == lineups[j][4]) or (players[3][i][0] == lineups[j][5]) or
+              (players[3][i][0] == lineups[j][6]) or (players[3][i][0] == lineups[j][7])) * takeSG[i] for i in rangeSG]))
 
     valueC = solver.Sum([players[0][i][1] * takeC[i] for i in rangeC])
     valuePG = solver.Sum([players[1][i][1] * takePG[i] for i in rangePG])
@@ -76,18 +97,27 @@ def lineupBuilder(players, salaryCap, lineups):
 
     solver.Add(salaryC + salaryPG + salaryPF + salarySG + salarySF <= salaryCap)
 
-    # Sets number of player to pick per position.  Can this be adjusted for a utility slot?
-    solver.Add((solver.Sum(takePG[i] for i in rangePG) == 1) or (solver.Sum(takePG[i] for i in rangePG) == 2) or (solver.Sum(takePG[i] for i in rangePG) == 3))
-    solver.Add((solver.Sum(takeSG[i] for i in rangeSG) == 1) or (solver.Sum(takeSG[i] for i in rangeSG) == 2) or (solver.Sum(takeSG[i] for i in rangeSG) == 3))
-    solver.Add((solver.Sum(takeSF[i] for i in rangeSF) == 1) or (solver.Sum(takeSF[i] for i in rangeSF) == 2) or (solver.Sum(takeSF[i] for i in rangeSF) == 3))
-    solver.Add((solver.Sum(takePF[i] for i in rangePF) == 1) or (solver.Sum(takePF[i] for i in rangePF) == 2) or (solver.Sum(takePF[i] for i in rangePF) == 3))
-    solver.Add((solver.Sum(takeC[i] for i in rangeC) == 1) or (solver.Sum(takeC[i] for i in rangeC) == 2))
+    # Constraint mandating team has 8 players
+    solver.Add(((solver.Sum(takePG[i] for i in rangePG)) + (solver.Sum(takeSG[i] for i in rangeSG)) + (
+        solver.Sum(takeSF[i] for i in rangeSF)) + (solver.Sum(takePF[i] for i in rangePF)) + (
+                    solver.Sum(takeC[i] for i in rangeC))) == 8)
 
-    solver.Add(((solver.Sum(takePG[i] for i in rangePG)) + (solver.Sum(takeSG[i] for i in rangeSG)) + (solver.Sum(takeSF[i] for i in rangeSF)) + (solver.Sum(takePF[i] for i in rangePF)) + (solver.Sum(takeC[i] for i in rangeC))) == 8)
+    # Constraints setting number of players per position
+    # NOTE: This is causing a problem.  Currently, this is sometimes resulting in only havin 1 PG and 1 SG and does not
+    # allow for the third G position to be filled.  The same is true for the third F position. Possibly creating a
+    # separate array of all guards would fix this?
 
-    # Max 5 hitters per teamRRr
-    for i in range(0, 29):
-        solver.Add(teamsPG[i] + teamsSG[i] + teamsSF[i] + teamsPF[i] + teamsPG[i] <= 5)
+    # This helps, as it mandates that there at least 3 PG and 3 SG. It could be manually fixed by changing PG/SF or
+    # SG/PF minimum to 2
+
+    solver.Add(((solver.Sum(takePG[i] for i in rangePG)) + (solver.Sum(takeSG[i] for i in rangeSG)) >= 3))
+    solver.Add(((solver.Sum(takeSF[i] for i in rangeSF)) + (solver.Sum(takePF[i] for i in rangePF)) >= 3))
+
+    solver.Add((solver.Sum(takePG[i] for i in rangePG) >= 1) and (solver.Sum(takePG[i] for i in rangePG) <= 3))
+    solver.Add((solver.Sum(takeSG[i] for i in rangeSG) >= 1) and (solver.Sum(takeSG[i] for i in rangeSG) <= 3))
+    solver.Add((solver.Sum(takeSF[i] for i in rangeSF) >= 1) and (solver.Sum(takeSF[i] for i in rangeSF) <= 3))
+    solver.Add((solver.Sum(takePF[i] for i in rangePF) >= 1) and (solver.Sum(takePF[i] for i in rangePF) <= 3))
+    solver.Add((solver.Sum(takeC[i] for i in rangeC) >= 1) and (solver.Sum(takeC[i] for i in rangeC) <= 2))
 
     # Stack at least three hitters from the same team.  THis seems like a very sloppy way of doing it, but it does work
     solver.Add((teamsPG[0] + teamsSG[0] + teamsSF[0] + teamsPF[0] + teamsC[0] >= 3) or
@@ -133,38 +163,107 @@ def lineupBuilder(players, salaryCap, lineups):
     solver.Solve()
     assert solver.VerifySolution(1e-7, True)
     print('Solved in', solver.wall_time(), 'milliseconds!', "\n")
-    salary = 0
 
+    salary = 0
+    projection = 0
+    tempLineup = [[], [], [], [], []]
     for i in rangeC:
         if (takeC[i].SolutionValue()):
             salary += players[0][i][2]
-            print(players[0][i][0], '(C): ${:,d}'.format(players[0][i][2]), '(' + str(players[0][i][1]) + ')')
+            projection += players[0][i][1]
+            tempLineup[0].append(players[0][i][0])
 
     for i in rangePG:
         if (takePG[i].SolutionValue()):
             salary += players[1][i][2]
-            print(players[1][i][0], '(PG): ${:,d}'.format(players[1][i][2]), '(' + str(players[1][i][1]) + ')')
+            projection += players[1][i][1]
+            tempLineup[1].append(players[1][i][0])
 
     for i in rangePF:
         if (takePF[i].SolutionValue()):
             salary += players[2][i][2]
-            print(players[2][i][0], '(PF): ${:,d}'.format(players[2][i][2]), '(' + str(players[2][i][1]) + ')')
+            projection += players[2][i][1]
+            tempLineup[2].append(players[2][i][0])
 
     for i in rangeSG:
         if (takeSG[i].SolutionValue()):
             salary += players[3][i][2]
-            print(players[3][i][0], '(SG): ${:,d}'.format(players[3][i][2]), '(' + str(players[3][i][1]) + ')')
+            projection += players[3][i][1]
+            tempLineup[3].append(players[3][i][0])
 
     for i in rangeSF:
         if (takeSF[i].SolutionValue()):
             salary += players[4][i][2]
-            print(players[4][i][0], '(SF): ${:,d}'.format(players[4][i][2]), '(' + str(players[4][i][1]) + ')')
+            projection += players[4][i][1]
+            tempLineup[4].append(players[4][i][0])
 
-    print("\n", 'Total: ${:,d}'.format(salary), '(' + str(solver.Objective().Value()) + ')')
+    rC = range(0, len(tempLineup[0]))
+    rPG = range(0, len(tempLineup[1]))
+    rPF = range(0, len(tempLineup[2]))
+    rSG = range(0, len(tempLineup[3]))
+    rSF = range(0, len(tempLineup[4]))
 
-    if (len(sys.argv) < 2):
-        print('Usage:', sys.executable, sys.argv[0], 'players.csv')
-        sys.exit(1)
+    currLineup = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    countC = 0
+    countPG = 0
+    countPF = 0
+    countSG = 0
+    countSF = 0
+
+    for i in rC:
+        if countC == 0:
+            currLineup[4] = tempLineup[0][i]
+            countC = countC + 1
+        elif countC == 1:
+            currLineup[7] = tempLineup[0][i]
+            countC = countC + 1
+
+    for i in rPG:
+        if countPG == 0:
+            currLineup[0] = tempLineup[1][i]
+            countPG = countPG + 1
+        elif countPG == 1:
+            currLineup[5] = tempLineup[1][i]
+            countPG = countPG + 1
+        elif countPG == 2:
+            currLineup[7] = tempLineup[1][i]
+            countPG = countPG + 1
+
+    for i in rPF:
+        if countPF == 0:
+            currLineup[3] = tempLineup[2][i]
+            countPF = countPF + 1
+        elif countPF == 1:
+            currLineup[6] = tempLineup[2][i]
+            countPF = countPF + 1
+        elif countPF == 2:
+            currLineup[7] = tempLineup[2][i]
+            countPF = countPF + 1
+
+    for i in rSG:
+        if countSG == 0:
+            currLineup[1] = tempLineup[3][i]
+            countSG = countSG + 1
+        elif countSG == 1:
+            currLineup[5] = tempLineup[3][i]
+            countSG = countSG + 1
+        elif countSG == 2:
+            currLineup[7] = tempLineup[3][i]
+            countSG = countSG + 1
+
+    for i in rSF:
+        if countSF == 0:
+            currLineup[2] = tempLineup[4][i]
+            countSF = countSF + 1
+        elif countSF == 1:
+            currLineup[6] = tempLineup[4][i]
+            countSF = countSF + 1
+        elif countSF == 2:
+            currLineup[7] = tempLineup[4][i]
+            countSF = countSF + 1
+
+    return [currLineup, salary, projection]
 
 
 players = [[], [], [], [], []]
@@ -177,8 +276,8 @@ with open('playersNBA.csv', 'r') as csvfile:
             [row['Name'], float(row['Value']), int(row['Salary']), int(row['Team'])]
         )
 
-def lineups(numLineups):
 
+def lineups(numLineups):
     lineupList = []
     resultList = []
     lineupList.append(['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'])
@@ -188,7 +287,7 @@ def lineups(numLineups):
         lineupList.append(results[0])
         resultList.append(results)
 
-    lineupsOnly = [['PG', 'SC', 'SF', 'PF', 'C', 'G', 'F', 'UTIL']]
+    lineupsOnly = [['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'UTIL']]
 
     for i in range(1, numLineups):
         lineupsOnly.append(resultList[i][0])
@@ -211,12 +310,5 @@ def lineups(numLineups):
 
     return resultList
 
-print(lineups(10))
 
-
-
-
-
-
-
-
+print(lineups(20))
