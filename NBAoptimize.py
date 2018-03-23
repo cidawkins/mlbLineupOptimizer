@@ -219,22 +219,26 @@ def lineupBuilder(players, salaryCap, lineups):
     solver.Add((pgCount + pgsgCount + sgCount + sgsfCount + pfCount + pfcCount + sfCount + cCount + sfpfCount
                + pgsfCount) == 8)
 
-    solver.Add(1 <= (pgCount + pgsgCount + pgsfCount) <= 6)
-    solver.Add(1 <= (sgCount + sgsfCount + pgsgCount) <= 6)
-    solver.Add(1 <= (sfCount + sgsfCount + sfpfCount + pgsfCount) <= 7)
-    solver.Add(1 <= (pfCount + pfcCount + sfpfCount) <= 5)
-    solver.Add(1 <= (cCount + pfcCount) <= 4)
-    solver.Add(pgCount == 1)
-    solver.Add(sgCount == 1)
-    solver.Add(sfCount == 1)
-    solver.Add(pfCount == 1)
-    solver.Add(cCount == 1)
+    solver.Add(1 <= (pgCount + pgsgCount + pgsfCount))
+    solver.Add(1 <= (sgCount + sgsfCount + pgsgCount))
+    solver.Add(1 <= (sfCount + sgsfCount + sfpfCount + pgsfCount))
+    solver.Add(1 <= (pfCount + pfcCount + sfpfCount))
+    solver.Add(2 <= (cCount + pfcCount))
+
+    solver.Add(2 <= ((pgCount + pgsgCount + pgsfCount) + (sgCount + sgsfCount)))
+    solver.Add(2 <= ((sgCount + sgsfCount + pgsgCount) + (sfCount + sfpfCount + pgsfCount)))
+    solver.Add(2 <= ((pgCount + pgsgCount + pgsfCount) + (sfCount + sgsfCount + sfpfCount)))
+    solver.Add(2 <= ((sfCount + sgsfCount + sfpfCount + pgsfCount) + (pfCount + pfcCount)))
+    solver.Add(2 <= ((pfCount + sfpfCount) + (cCount + pfcCount)))
+
+
+    """
     solver.Add(pgsgCount <= 4)
     solver.Add(sgsfCount <= 5)
     solver.Add(sfpfCount <= 4)
     solver.Add(pfcCount <= 4)
     solver.Add(pgsfCount <= 5)
-
+    """
     # Constraint for picking at least 3 guards and forwards
     solver.Add((pgCount + pgsgCount + sgCount + sgsfCount + pgsfCount) >= 3)
     solver.Add((sfCount + pfCount + pfcCount + sfpfCount + sgsfCount + pgsfCount) >= 3)
@@ -394,7 +398,7 @@ def lineupBuilder(players, salaryCap, lineups):
                     currLineup[i] = [tempLineup[2][0]]
                     del tempLineup[2][0]
                 elif tempLineup[9]:
-                    currLineup[i] = [tempLineup[2][0]]
+                    currLineup[i] = [tempLineup[9][0]]
                     del tempLineup[9][0]
             elif i == 1:
                 if tempLineup[5]:
@@ -423,12 +427,12 @@ def lineupBuilder(players, salaryCap, lineups):
                 if tempLineup[3]:
                     currLineup[i] = [tempLineup[3][0]]
                     del tempLineup[3][0]
-                elif tempLineup[4]:
-                    currLineup[i] = [tempLineup[4][0]]
-                    del tempLineup[4][0]
                 elif tempLineup[8]:
                     currLineup[i] = [tempLineup[8][0]]
                     del tempLineup[8][0]
+                elif tempLineup[4]:
+                    currLineup[i] = [tempLineup[4][0]]
+                    del tempLineup[4][0]
             elif i == 4:
                 if tempLineup[0]:
                     currLineup[i] = [tempLineup[0][0]]
@@ -761,7 +765,7 @@ with open('rgplayers.csv', 'r') as csvfile:
 
     for row in spamreader:
         players[getPositionNumber(row['Subposition'])].append(
-            [row['Name'], float(row['Value']), int(row['Salary']), getTeamNum(row['Team'])])
+            [row['Name'], float(row['Ceil']), int(row['Salary']), getTeamNum(row['Team'])])
 
 
 def lineups(numLineups):
@@ -798,4 +802,4 @@ def lineups(numLineups):
     return resultList
 
 
-print(lineups(37))
+print(lineups(20))
