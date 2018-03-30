@@ -10,23 +10,33 @@ def getPosNum(name):
         'P': 0,
         'SP, RP': 0,
         'C': 1,
+        'C/OF': 1,
         '1B': 2,
+        '1B/OF': 2,
+        '1B/3B': 2,
+        '1B/C': 2,
         '2B': 3,
+        '2B/3B': 3,
+        '2B/SS': 3,
+        '2B/OF': 3,
         '3B': 4,
+        '3B/SS': 4,
+        '3B/OF': 4,
         'SS': 5,
-        'OF': 6
+        'OF': 6,
+        'OF/SS': 6
     }[name]
 
 def getTeamNum(team):
     return {
         'BOS': 0,
         'NYY': 1,
-        'TB': 2,
+        'TBR': 2,
         'TOR': 3,
         'BAL': 4,
         'CHW': 5,
         'MIN': 6,
-        'KC': 7,
+        'KCR': 7,
         'DET': 8,
         'CLE': 9,
         'OAK': 10,
@@ -45,8 +55,8 @@ def getTeamNum(team):
         'MIL': 23,
         'STL': 24,
         'LAD': 25,
-        'SF': 26,
-        'SD': 27,
+        'SFG': 26,
+        'SDP': 27,
         'COL': 28,
         'ARI': 29
     }[team]
@@ -81,13 +91,13 @@ def lineupBuilder(players, salaryCap, lineups):
     teamsOF = []
 
     for teamNumber in range(0, 29):
-        teamsP.insert(teamNumber, solver.Sum([(players[0][i][3] == teamNumber + 1) * takeP[i] for i in rangeP]))
-        teamsC.insert(teamNumber, solver.Sum([(players[1][i][3] == teamNumber + 1) * takeC[i] for i in rangeC]))
-        teams1B.insert(teamNumber, solver.Sum([(players[2][i][3] == teamNumber + 1) * take1B[i] for i in range1B]))
-        teams2B.insert(teamNumber, solver.Sum([(players[3][i][3] == teamNumber + 1) * take2B[i] for i in range2B]))
-        teams3B.insert(teamNumber, solver.Sum([(players[4][i][3] == teamNumber + 1) * take3B[i] for i in range3B]))
-        teamsSS.insert(teamNumber, solver.Sum([(players[5][i][3] == teamNumber + 1) * takeSS[i] for i in rangeSS]))
-        teamsOF.insert(teamNumber, solver.Sum([(players[6][i][3] == teamNumber + 1) * takeOF[i] for i in rangeOF]))
+        teamsP.insert(teamNumber, solver.Sum([(players[0][i][3] == teamNumber) * takeP[i] for i in rangeP]))
+        teamsC.insert(teamNumber, solver.Sum([(players[1][i][3] == teamNumber) * takeC[i] for i in rangeC]))
+        teams1B.insert(teamNumber, solver.Sum([(players[2][i][3] == teamNumber) * take1B[i] for i in range1B]))
+        teams2B.insert(teamNumber, solver.Sum([(players[3][i][3] == teamNumber) * take2B[i] for i in range2B]))
+        teams3B.insert(teamNumber, solver.Sum([(players[4][i][3] == teamNumber) * take3B[i] for i in range3B]))
+        teamsSS.insert(teamNumber, solver.Sum([(players[5][i][3] == teamNumber) * takeSS[i] for i in rangeSS]))
+        teamsOF.insert(teamNumber, solver.Sum([(players[6][i][3] == teamNumber) * takeOF[i] for i in rangeOF]))
 
     lCrossP = []
     lCrossC = []
@@ -133,10 +143,11 @@ def lineupBuilder(players, salaryCap, lineups):
     solver.Add(solver.Sum(takeSS[i] for i in rangeSS) == 1)
     solver.Add(solver.Sum(takeOF[i] for i in rangeOF) == 3)
 
+
     # Max 5 hitters per team
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
-
+    
     # Stack at least three hitters from the same team.  THis seems like a very sloppy way of doing it, but it does work
     solver.Add((teamsC[0] + teams1B[0] + teams2B[0] + teams3B[0] + teamsSS[0] + teamsOF[0] >= 3) or
                (teamsC[1] + teams1B[1] + teams2B[1] + teams3B[1] + teamsSS[1] + teamsOF[1] >= 3) or
@@ -168,10 +179,10 @@ def lineupBuilder(players, salaryCap, lineups):
                (teamsC[27] + teams1B[27] + teams2B[27] + teams3B[27] + teamsSS[27] + teamsOF[27] >= 3) or
                (teamsC[28] + teams1B[28] + teams2B[28] + teams3B[28] + teamsSS[28] + teamsOF[28] >= 3) or
                (teamsC[29] + teams1B[29] + teams2B[29] + teams3B[29] + teamsSS[29] + teamsOF[29] >= 3))
-
+    
     # Add constraint to adjust for lineup overlap
     for i in range(0, len(lineups)):
-        solver.Add(lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 3)
+        solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 2)
 
     # Add constraint to add pitcher to stack
 
@@ -237,7 +248,7 @@ with open('players.csv', 'r') as csvfile:
 
     for row in spamreader:
         players[getPosNum(row['Subposition'])].append(
-            [row['Name'], float(row['Value']), int(row['Salary']), int(row['Team'])]
+            [row['Name'], float(row['Value']), int(row['Salary']), getTeamNum(row['Team'])]
         )
 
 
@@ -256,7 +267,7 @@ def lineups(numLineups):
 
     lineupsOnly = [['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']]
 
-    for i in range(1, numLineups):
+    for i in range(0, numLineups):
         lineupsOnly.append(resultList[i][0])
 
     # Create csv file of lineups
@@ -277,7 +288,7 @@ def lineups(numLineups):
 
     return resultList
 
-print(lineups(10))
+print(lineups(20))
 
 
 
