@@ -15,6 +15,7 @@ def getPosNum(name):
         '1B/OF': 2,
         '1B/3B': 2,
         '1B/C': 2,
+        '1B/2B': 2,
         '2B': 3,
         '2B/3B': 3,
         '2B/SS': 3,
@@ -22,6 +23,7 @@ def getPosNum(name):
         '3B': 4,
         '3B/SS': 4,
         '3B/OF': 4,
+        '3B/C': 4,
         'SS': 5,
         'OF': 6,
         'OF/SS': 6
@@ -53,15 +55,15 @@ def getTeamNum(team):
         'PIT': 21,
         'CIN': 22,
         'MIL': 23,
-        'STL': 24,
+        'COL': 24,
         'LAD': 25,
-        'SFG': 26,
+        'ARI': 26,
         'SDP': 27,
-        'COL': 28,
-        'ARI': 29
+        'STL': 28,
+        'SFG': 29
     }[team]
 
-def lineupBuilder(players, salaryCap, lineups):
+def lineupBuilder(players, salaryCap, lineups, stackNum):
     solver = pywraplp.Solver('CoinsGridCLP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
 
     currLineup = []
@@ -98,6 +100,23 @@ def lineupBuilder(players, salaryCap, lineups):
         teams3B.insert(teamNumber, solver.Sum([(players[4][i][3] == teamNumber) * take3B[i] for i in range3B]))
         teamsSS.insert(teamNumber, solver.Sum([(players[5][i][3] == teamNumber) * takeSS[i] for i in rangeSS]))
         teamsOF.insert(teamNumber, solver.Sum([(players[6][i][3] == teamNumber) * takeOF[i] for i in rangeOF]))
+
+    oppP = []
+    oppC = []
+    opp1B = []
+    opp2B = []
+    opp3B = []
+    oppSS = []
+    oppOF = []
+
+    for teamNumber in range(0, 29):
+        oppP.insert(teamNumber, solver.Sum([(players[0][i][4] == teamNumber) * takeP[i] for i in rangeP]))
+        oppC.insert(teamNumber, solver.Sum([(players[1][i][4] == teamNumber) * takeC[i] for i in rangeC]))
+        opp1B.insert(teamNumber, solver.Sum([(players[2][i][4] == teamNumber) * take1B[i] for i in range1B]))
+        opp2B.insert(teamNumber, solver.Sum([(players[3][i][4] == teamNumber) * take2B[i] for i in range2B]))
+        opp3B.insert(teamNumber, solver.Sum([(players[4][i][4] == teamNumber) * take3B[i] for i in range3B]))
+        oppSS.insert(teamNumber, solver.Sum([(players[5][i][4] == teamNumber) * takeSS[i] for i in rangeSS]))
+        oppOF.insert(teamNumber, solver.Sum([(players[6][i][4] == teamNumber) * takeOF[i] for i in rangeOF]))
 
     lCrossP = []
     lCrossC = []
@@ -147,46 +166,25 @@ def lineupBuilder(players, salaryCap, lineups):
     # Max 5 hitters per team
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
-    
+
     # Stack at least three hitters from the same team.  THis seems like a very sloppy way of doing it, but it does work
-    solver.Add((teamsC[0] + teams1B[0] + teams2B[0] + teams3B[0] + teamsSS[0] + teamsOF[0] >= 3) or
-               (teamsC[1] + teams1B[1] + teams2B[1] + teams3B[1] + teamsSS[1] + teamsOF[1] >= 3) or
-               (teamsC[2] + teams1B[2] + teams2B[2] + teams3B[2] + teamsSS[2] + teamsOF[2] >= 3) or
-               (teamsC[3] + teams1B[3] + teams2B[3] + teams3B[3] + teamsSS[3] + teamsOF[3] >= 3) or
-               (teamsC[4] + teams1B[4] + teams2B[4] + teams3B[4] + teamsSS[4] + teamsOF[4] >= 3) or
-               (teamsC[5] + teams1B[5] + teams2B[5] + teams3B[5] + teamsSS[5] + teamsOF[5] >= 3) or
-               (teamsC[6] + teams1B[6] + teams2B[6] + teams3B[6] + teamsSS[6] + teamsOF[6] >= 3) or
-               (teamsC[7] + teams1B[7] + teams2B[7] + teams3B[7] + teamsSS[7] + teamsOF[7] >= 3) or
-               (teamsC[8] + teams1B[8] + teams2B[8] + teams3B[8] + teamsSS[8] + teamsOF[8] >= 3) or
-               (teamsC[9] + teams1B[9] + teams2B[9] + teams3B[9] + teamsSS[9] + teamsOF[9] >= 3) or
-               (teamsC[10] + teams1B[10] + teams2B[10] + teams3B[10] + teamsSS[10] + teamsOF[10] >= 3) or
-               (teamsC[11] + teams1B[11] + teams2B[11] + teams3B[11] + teamsSS[11] + teamsOF[11] >= 3) or
-               (teamsC[12] + teams1B[12] + teams2B[12] + teams3B[12] + teamsSS[12] + teamsOF[12] >= 3) or
-               (teamsC[13] + teams1B[13] + teams2B[13] + teams3B[13] + teamsSS[13] + teamsOF[13] >= 3) or
-               (teamsC[14] + teams1B[14] + teams2B[14] + teams3B[14] + teamsSS[14] + teamsOF[14] >= 3) or
-               (teamsC[15] + teams1B[15] + teams2B[15] + teams3B[15] + teamsSS[15] + teamsOF[15] >= 3) or
-               (teamsC[16] + teams1B[16] + teams2B[16] + teams3B[16] + teamsSS[16] + teamsOF[16] >= 3) or
-               (teamsC[17] + teams1B[17] + teams2B[17] + teams3B[17] + teamsSS[17] + teamsOF[17] >= 3) or
-               (teamsC[18] + teams1B[18] + teams2B[18] + teams3B[18] + teamsSS[18] + teamsOF[18] >= 3) or
-               (teamsC[19] + teams1B[19] + teams2B[19] + teams3B[19] + teamsSS[19] + teamsOF[19] >= 3) or
-               (teamsC[20] + teams1B[20] + teams2B[20] + teams3B[20] + teamsSS[20] + teamsOF[20] >= 3) or
-               (teamsC[21] + teams1B[21] + teams2B[21] + teams3B[21] + teamsSS[21] + teamsOF[21] >= 3) or
-               (teamsC[22] + teams1B[22] + teams2B[22] + teams3B[22] + teamsSS[22] + teamsOF[22] >= 3) or
-               (teamsC[23] + teams1B[23] + teams2B[23] + teams3B[23] + teamsSS[23] + teamsOF[23] >= 3) or
-               (teamsC[24] + teams1B[24] + teams2B[24] + teams3B[24] + teamsSS[24] + teamsOF[24] >= 3) or
-               (teamsC[25] + teams1B[25] + teams2B[25] + teams3B[25] + teamsSS[25] + teamsOF[25] >= 3) or
-               (teamsC[26] + teams1B[26] + teams2B[26] + teams3B[26] + teamsSS[26] + teamsOF[26] >= 3) or
-               (teamsC[27] + teams1B[27] + teams2B[27] + teams3B[27] + teamsSS[27] + teamsOF[27] >= 3) or
-               (teamsC[28] + teams1B[28] + teams2B[28] + teams3B[28] + teamsSS[28] + teamsOF[28] >= 3) or
-               (teamsC[29] + teams1B[29] + teams2B[29] + teams3B[29] + teamsSS[29] + teamsOF[29] >= 3))
-    
+    solver.Add(teamsC[stacks[stackNum][0]] + teams1B[stacks[stackNum][0]] + teams2B[stacks[stackNum][0]]
+               + teams3B[stacks[stackNum][0]] + teamsSS[stacks[stackNum][0]] + teamsOF[stacks[stackNum][0]] >= 2)
+
+    solver.Add(teamsC[stacks[stackNum][1]] + teams1B[stacks[stackNum][1]] + teams2B[stacks[stackNum][1]]
+               + teams3B[stacks[stackNum][1]] + teamsSS[stacks[stackNum][1]] + teamsOF[stacks[stackNum][1]] >= 2)
+
+    solver.Add(teamsC[stacks[stackNum][2]] + teams1B[stacks[stackNum][2]] + teams2B[stacks[stackNum][2]]
+               + teams3B[stacks[stackNum][2]] + teamsSS[stacks[stackNum][2]] + teamsOF[stacks[stackNum][2]] >= 2)
+
+    # Constraint to avoid pitcher vs stack combo
+    solver.Add(oppP[stacks[stackNum][0]] == 0)
+    solver.Add(oppP[stacks[stackNum][1]] == 0)
+    solver.Add(oppP[stacks[stackNum][2]] == 0)
+
     # Add constraint to adjust for lineup overlap
     for i in range(0, len(lineups)):
-        solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 2)
-
-    # Add constraint to add pitcher to stack
-
-
+        solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 5)
 
     solver.Maximize(valueP + valueC + value1B + value2B + value3B + valueSS + valueOF)
     solver.Solve()
@@ -248,8 +246,15 @@ with open('players.csv', 'r') as csvfile:
 
     for row in spamreader:
         players[getPosNum(row['Subposition'])].append(
-            [row['Name'], float(row['Value']), int(row['Salary']), getTeamNum(row['Team'])]
+            [row['Name'], float(row['Value']), int(row['Salary']), getTeamNum(row['Team']), getTeamNum(row['Opp'])]
         )
+
+with open('stacks.csv', 'r') as csvfile:
+    spamreader = csv.DictReader(csvfile)
+
+    stacks = []
+    for row in spamreader:
+        stacks.append([getTeamNum(row['T1']), getTeamNum(row['T2']), getTeamNum(row['T3'])])
 
 
 # Make multiple lineups
@@ -260,8 +265,8 @@ def lineups(numLineups):
     resultList = []
     lineupList.append(['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'])
 
-    for i in range(0, numLineups):
-        results = lineupBuilder(players, salaryCap, lineupList)
+    for stackNum in range(0, numLineups):
+        results = lineupBuilder(players, salaryCap, lineupList, stackNum)
         lineupList.append(results[0])
         resultList.append(results)
 
@@ -288,7 +293,7 @@ def lineups(numLineups):
 
     return resultList
 
-print(lineups(20))
+print(lineups(15))
 
 
 
