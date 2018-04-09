@@ -60,7 +60,8 @@ def getTeamNum(team):
         'ARI': 26,
         'SDP': 27,
         'STL': 28,
-        'SFG': 29
+        'SFG': 29,
+        'x': 99
     }[team]
 
 def lineupBuilder(players, salaryCap, lineups, stackNum):
@@ -143,6 +144,14 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     valueSS = solver.Sum([players[5][i][1] * takeSS[i] for i in rangeSS])
     valueOF = solver.Sum([players[6][i][1] * takeOF[i] for i in rangeOF])
 
+    ceilP = solver.Sum([players[0][i][5] * takeP[i] for i in rangeP])
+    ceilC = solver.Sum([players[1][i][5] * takeC[i] for i in rangeC])
+    ceil1B = solver.Sum([players[2][i][5] * take1B[i] for i in range1B])
+    ceil2B = solver.Sum([players[3][i][5] * take2B[i] for i in range2B])
+    ceil3B = solver.Sum([players[4][i][5] * take3B[i] for i in range3B])
+    ceilSS = solver.Sum([players[5][i][5] * takeSS[i] for i in rangeSS])
+    ceilOF = solver.Sum([players[6][i][5] * takeOF[i] for i in rangeOF])
+
     salaryP = solver.Sum([players[0][i][2] * takeP[i] for i in rangeP])
     salaryC = solver.Sum([players[1][i][2] * takeC[i] for i in rangeC])
     salary1B = solver.Sum([players[2][i][2] * take1B[i] for i in range1B])
@@ -152,6 +161,7 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     salaryOF = solver.Sum([players[6][i][2] * takeOF[i] for i in rangeOF])
 
     solver.Add(salaryP + salaryC + salary1B + salary2B + salary3B + salarySS + salaryOF <= salaryCap)
+    solver.Add(salaryP <= 18000)
 
     # Sets number of player to pick per position.  Can this be adjusted for a utility slot?
     solver.Add(solver.Sum(takeP[i] for i in rangeP) == 2)
@@ -167,86 +177,94 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
 
-    # Stack at least three hitters from the same team.  THis seems like a very sloppy way of doing it, but it does work
+    # Stack hitters from the same team
     solver.Add(teamsC[stacks[stackNum][0]] + teams1B[stacks[stackNum][0]] + teams2B[stacks[stackNum][0]]
-               + teams3B[stacks[stackNum][0]] + teamsSS[stacks[stackNum][0]] + teamsOF[stacks[stackNum][0]] >= 2)
-
-    solver.Add(teamsC[stacks[stackNum][1]] + teams1B[stacks[stackNum][1]] + teams2B[stacks[stackNum][1]]
-               + teams3B[stacks[stackNum][1]] + teamsSS[stacks[stackNum][1]] + teamsOF[stacks[stackNum][1]] >= 2)
-
-    solver.Add(teamsC[stacks[stackNum][2]] + teams1B[stacks[stackNum][2]] + teams2B[stacks[stackNum][2]]
-               + teams3B[stacks[stackNum][2]] + teamsSS[stacks[stackNum][2]] + teamsOF[stacks[stackNum][2]] >= 2)
-
-    # Constraint to avoid pitcher vs stack combo
+               + teams3B[stacks[stackNum][0]] + teamsSS[stacks[stackNum][0]] + teamsOF[stacks[stackNum][0]] == 5)
     solver.Add(oppP[stacks[stackNum][0]] == 0)
-    solver.Add(oppP[stacks[stackNum][1]] == 0)
-    solver.Add(oppP[stacks[stackNum][2]] == 0)
+
 
     # Add constraint to adjust for lineup overlap
     for i in range(0, len(lineups)):
-        solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 5)
+        solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 4)
 
-    solver.Maximize(valueP + valueC + value1B + value2B + value3B + valueSS + valueOF)
+    solver.Maximize(ceilP + ceilC + ceil1B + ceil2B + ceil3B + ceilSS + ceilOF)
     solver.Solve()
     assert solver.VerifySolution(1e-7, True)
     print('Solved in', solver.wall_time(), 'milliseconds!', "\n")
 
     salary = 0
     projection = 0
+    ceilProjection = 0
+    floorProjection = 0
 
     for i in rangeP:
         if (takeP[i].SolutionValue()):
             salary += players[0][i][2]
             projection += players[0][i][1]
+            ceilProjection += players[0][i][5]
+            floorProjection += players[0][i][6]
             currLineup.append(players[0][i][0])
 
     for i in rangeC:
         if (takeC[i].SolutionValue()):
             salary += players[1][i][2]
             projection += players[1][i][1]
+            ceilProjection += players[1][i][5]
+            floorProjection += players[1][i][6]
             currLineup.append(players[1][i][0])
 
     for i in range1B:
         if (take1B[i].SolutionValue()):
             salary += players[2][i][2]
             projection += players[2][i][1]
+            ceilProjection += players[2][i][5]
+            floorProjection += players[2][i][6]
             currLineup.append(players[2][i][0])
 
     for i in range2B:
         if (take2B[i].SolutionValue()):
             salary += players[3][i][2]
             projection += players[3][i][1]
+            ceilProjection += players[3][i][5]
+            floorProjection += players[3][i][6]
             currLineup.append(players[3][i][0])
 
     for i in range3B:
         if (take3B[i].SolutionValue()):
             salary += players[4][i][2]
             projection += players[4][i][1]
+            ceilProjection += players[4][i][5]
+            floorProjection += players[4][i][6]
             currLineup.append(players[4][i][0])
 
     for i in rangeSS:
         if (takeSS[i].SolutionValue()):
             salary += players[5][i][2]
             projection += players[5][i][1]
+            ceilProjection += players[5][i][5]
+            floorProjection += players[5][i][6]
             currLineup.append(players[5][i][0])
 
     for i in rangeOF:
         if (takeOF[i].SolutionValue()):
             salary += players[6][i][2]
             projection += players[6][i][1]
+            ceilProjection += players[6][i][5]
+            floorProjection += players[6][i][6]
             currLineup.append(players[6][i][0])
 
 
-    return [currLineup, salary, projection]
+    return [currLineup, salary, projection, ceilProjection, floorProjection]
 
-players = [[], [], [], [], [], [], []]
+players = [[], [], [], [], [], [], [], [], []]
 
 with open('players.csv', 'r') as csvfile:
     spamreader = csv.DictReader(csvfile)
 
     for row in spamreader:
         players[getPosNum(row['Subposition'])].append(
-            [row['Name'], float(row['Value']), int(row['Salary']), getTeamNum(row['Team']), getTeamNum(row['Opp'])]
+            [row['Name'], float(row['Value']), int(row['Salary']), getTeamNum(row['Team']), getTeamNum(row['Opp']),
+             float(row['Ceil']), float(row['Floor'])]
         )
 
 with open('stacks.csv', 'r') as csvfile:
@@ -254,7 +272,7 @@ with open('stacks.csv', 'r') as csvfile:
 
     stacks = []
     for row in spamreader:
-        stacks.append([getTeamNum(row['T1']), getTeamNum(row['T2']), getTeamNum(row['T3'])])
+        stacks.append([getTeamNum(row['T1'])])
 
 
 # Make multiple lineups
@@ -293,7 +311,4 @@ def lineups(numLineups):
 
     return resultList
 
-print(lineups(15))
-
-
-
+print(lineups(20))
