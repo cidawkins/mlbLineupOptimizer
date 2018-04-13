@@ -55,12 +55,12 @@ def getTeamNum(team):
         'PIT': 21,
         'CIN': 22,
         'MIL': 23,
-        'COL': 24,
-        'LAD': 25,
+        'LAD': 24,
+        'SFG': 25,
         'ARI': 26,
-        'SDP': 27,
+        'COL': 27,
         'STL': 28,
-        'SFG': 29,
+        'SDP': 29,
         'x': 99
     }[team]
 
@@ -93,6 +93,7 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     teamsSS = []
     teamsOF = []
 
+    # Creates sum arrays for each position later to be used for stacking and limiting max players per team
     for teamNumber in range(0, 29):
         teamsP.insert(teamNumber, solver.Sum([(players[0][i][3] == teamNumber) * takeP[i] for i in rangeP]))
         teamsC.insert(teamNumber, solver.Sum([(players[1][i][3] == teamNumber) * takeC[i] for i in rangeC]))
@@ -110,6 +111,8 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     oppSS = []
     oppOF = []
 
+    # Creates sum arrays for player's opposing teams.  This is later used to insure a team stack does not get picked
+    # against an opposing pitcher
     for teamNumber in range(0, 29):
         oppP.insert(teamNumber, solver.Sum([(players[0][i][4] == teamNumber) * takeP[i] for i in rangeP]))
         oppC.insert(teamNumber, solver.Sum([(players[1][i][4] == teamNumber) * takeC[i] for i in rangeC]))
@@ -127,6 +130,8 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     lCrossSS = []
     lCrossOF = []
 
+    # Creates a sum array comparing each lineup to the lineups before it.  This is used to create varriance in the
+    # lineups
     for j in range(0, len(lineups)):
         lCrossP.insert(j, solver.Sum([((players[0][i][0] == lineups[j][0]) or (players[0][i][0] == lineups[j][1])) * takeP[i] for i in rangeP]))
         lCrossC.insert(j, solver.Sum([(players[1][i][0] == lineups[j][2]) * takeC[i] for i in rangeC]))
@@ -160,10 +165,10 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     salarySS = solver.Sum([players[5][i][2] * takeSS[i] for i in rangeSS])
     salaryOF = solver.Sum([players[6][i][2] * takeOF[i] for i in rangeOF])
 
+    # Constraint for keeping salary under the salary cap
     solver.Add(salaryP + salaryC + salary1B + salary2B + salary3B + salarySS + salaryOF <= salaryCap)
-    solver.Add(salaryP <= 18000)
 
-    # Sets number of player to pick per position.  Can this be adjusted for a utility slot?
+    # Sets number of player to pick per position
     solver.Add(solver.Sum(takeP[i] for i in rangeP) == 2)
     solver.Add(solver.Sum(takeC[i] for i in rangeC) == 1)
     solver.Add(solver.Sum(take1B[i] for i in range1B) == 1)
@@ -172,16 +177,19 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     solver.Add(solver.Sum(takeSS[i] for i in rangeSS) == 1)
     solver.Add(solver.Sum(takeOF[i] for i in rangeOF) == 3)
 
-
     # Max 5 hitters per team
     for i in range(0, 29):
         solver.Add(teamsC[i] + teams1B[i] + teams2B[i] + teams3B[i] + teamsSS[i] + teamsOF[i] <= 5)
 
-    # Stack hitters from the same team
+    # Stack five hitters from primary team
     solver.Add(teamsC[stacks[stackNum][0]] + teams1B[stacks[stackNum][0]] + teams2B[stacks[stackNum][0]]
                + teams3B[stacks[stackNum][0]] + teamsSS[stacks[stackNum][0]] + teamsOF[stacks[stackNum][0]] == 5)
     solver.Add(oppP[stacks[stackNum][0]] == 0)
 
+    # Stack three hitters from secondary team
+    solver.Add(teamsC[stacks[stackNum][1]] + teams1B[stacks[stackNum][1]] + teams2B[stacks[stackNum][1]]
+               + teams3B[stacks[stackNum][1]] + teamsSS[stacks[stackNum][1]] + teamsOF[stacks[stackNum][1]] == 3)
+    solver.Add(oppP[stacks[stackNum][1]] == 0)
 
     # Add constraint to adjust for lineup overlap
     for i in range(0, len(lineups)):
@@ -256,8 +264,10 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
 
     return [currLineup, salary, projection, ceilProjection, floorProjection]
 
+
 players = [[], [], [], [], [], [], [], [], []]
 
+# Read in csv of players and predictions
 with open('players.csv', 'r') as csvfile:
     spamreader = csv.DictReader(csvfile)
 
@@ -267,6 +277,7 @@ with open('players.csv', 'r') as csvfile:
              float(row['Ceil']), float(row['Floor'])]
         )
 
+# Reads in csv of desired team stacks
 with open('stacks.csv', 'r') as csvfile:
     spamreader = csv.DictReader(csvfile)
 
@@ -276,7 +287,6 @@ with open('stacks.csv', 'r') as csvfile:
 
 
 # Make multiple lineups
-
 def lineups(numLineups):
 
     lineupList = []
@@ -311,4 +321,5 @@ def lineups(numLineups):
 
     return resultList
 
+# Specify how many lineups needed
 print(lineups(20))
