@@ -157,6 +157,14 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     ceilSS = solver.Sum([players[5][i][5] * takeSS[i] for i in rangeSS])
     ceilOF = solver.Sum([players[6][i][5] * takeOF[i] for i in rangeOF])
 
+    floorP = solver.Sum([players[0][i][6] * takeP[i] for i in rangeP])
+    floorC = solver.Sum([players[1][i][6] * takeC[i] for i in rangeC])
+    floor1B = solver.Sum([players[2][i][6] * take1B[i] for i in range1B])
+    floor2B = solver.Sum([players[3][i][6] * take2B[i] for i in range2B])
+    floor3B = solver.Sum([players[4][i][6] * take3B[i] for i in range3B])
+    floorSS = solver.Sum([players[5][i][6] * takeSS[i] for i in rangeSS])
+    floorOF = solver.Sum([players[6][i][6] * takeOF[i] for i in rangeOF])
+
     salaryP = solver.Sum([players[0][i][2] * takeP[i] for i in rangeP])
     salaryC = solver.Sum([players[1][i][2] * takeC[i] for i in rangeC])
     salary1B = solver.Sum([players[2][i][2] * take1B[i] for i in range1B])
@@ -195,7 +203,15 @@ def lineupBuilder(players, salaryCap, lineups, stackNum):
     for i in range(0, len(lineups)):
         solver.Add(lCrossP[i] + lCrossC[i] + lCross1B[i] + lCross2B[i] + lCross3B[i] + lCrossSS[i] + lCrossOF[i] <= 4)
 
-    solver.Maximize(ceilP + ceilC + ceil1B + ceil2B + ceil3B + ceilSS + ceilOF)
+    varP = ceilP - floorP
+    varC = ceilC - floorC
+    var1B = ceil1B - floor1B
+    var2B = ceil2B - floor2B
+    var3B = ceil3B - floor3B
+    varSS = ceilSS - floorSS
+    varOF = ceilOF - floorOF
+
+    solver.Maximize(varP + varC + var1B + var2B + var3B + varSS + varOF)
     solver.Solve()
     assert solver.VerifySolution(1e-7, True)
     print('Solved in', solver.wall_time(), 'milliseconds!', "\n")
@@ -283,7 +299,7 @@ with open('stacks.csv', 'r') as csvfile:
 
     stacks = []
     for row in spamreader:
-        stacks.append([getTeamNum(row['T1'])])
+        stacks.append([getTeamNum(row['T1']), getTeamNum(row['T2'])])
 
 
 # Make multiple lineups
